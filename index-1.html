@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#080817">
+<title>Particle Magic Studio — Mueen</title>
+<style>
+:root{--bg:#080817;--panel:rgba(19,20,44,.86);--line:rgba(255,255,255,.12);--text:#f7f7ff;--muted:#a7abc8;--accent:#8b5cf6}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;overscroll-behavior:none}
+#stage{position:fixed;inset:0;touch-action:none;display:block;width:100%;height:100%}
+.vignette{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 28%,rgba(5,5,18,.2) 70%,rgba(5,5,18,.8) 120%)}
+header{position:fixed;z-index:5;top:0;left:0;right:0;padding:calc(12px + env(safe-area-inset-top)) 14px 10px;display:flex;align-items:center;justify-content:space-between;gap:10px;background:linear-gradient(180deg,rgba(7,7,22,.86),transparent)}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}.logo{width:39px;height:39px;border-radius:13px;display:grid;place-items:center;background:linear-gradient(135deg,#8b5cf6,#ec4899);box-shadow:0 0 24px #8b5cf655;font-size:21px;flex-shrink:0}.brand h1{font-size:16px;line-height:1.1;margin:0;letter-spacing:.2px}.brand p{font-size:10px;color:var(--muted);margin:4px 0 0;letter-spacing:1.6px}
+.pill{border:1px solid var(--line);background:rgba(20,20,44,.72);border-radius:999px;padding:8px 10px;font-size:11px;color:#ddd9ff;white-space:nowrap}
+#panel{position:fixed;z-index:6;left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom));max-height:min(56vh,460px);overflow:auto;padding:13px;border:1px solid var(--line);border-radius:23px;background:var(--panel);backdrop-filter:blur(20px);box-shadow:0 16px 60px #0008;scrollbar-width:none}
+#panel::-webkit-scrollbar{display:none}
+.panel-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px}.panel-top h2{font-size:13px;margin:0;font-weight:700}.hint{font-size:10px;color:var(--muted)}
+.shapes{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin-bottom:12px}
+.shape{min-width:0;border:1px solid var(--line);background:rgba(255,255,255,.035);color:#c7c8df;border-radius:14px;padding:8px 2px 7px;min-height:65px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font:inherit;cursor:pointer}
+.shape .emoji{font-size:20px;line-height:1.2}.shape span:last-child{font-size:10px}.shape.active{border-color:#a78bfa;background:linear-gradient(145deg,#8b5cf633,#ec489922);color:#fff;box-shadow:inset 0 0 0 1px #a78bfa22,0 0 20px #8b5cf622}
+.row{display:flex;align-items:center;gap:8px;margin:9px 0}.row label{font-size:11px;color:var(--muted);min-width:58px}.swatches{display:flex;gap:8px;align-items:center;flex:1;min-width:0}.swatch{width:27px;height:27px;border:2px solid #ffffff35;border-radius:50%;padding:0;flex-shrink:0;cursor:pointer}.swatch.active{outline:2px solid white;outline-offset:2px}.rainbow{border:1px solid var(--line);border-radius:999px;background:#ffffff0b;color:#eee;padding:7px 9px;font-size:10px}
+input[type=color]{width:30px;height:30px;padding:0;border:0;border-radius:50%;background:transparent;overflow:hidden}input[type=color]::-webkit-color-swatch-wrapper{padding:0}input[type=color]::-webkit-color-swatch{border:2px solid #ffffff55;border-radius:50%}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:7px 12px}.control{min-width:0}.control-head{display:flex;justify-content:space-between;gap:5px;font-size:10px;color:var(--muted);margin-bottom:5px}.control-head b{font-weight:600;color:#fff}input[type=range]{width:100%;accent-color:#a78bfa;height:18px;margin:0}
+.actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:11px}.btn{border:1px solid var(--line);background:#ffffff0a;color:#f4f3ff;border-radius:12px;padding:10px 3px;font:600 11px system-ui;cursor:pointer;min-width:0}.btn:active,.shape:active{transform:scale(.97)}.btn.primary{background:linear-gradient(135deg,#7c3aed,#db2777);border-color:transparent}.btn small{display:block;font-size:15px;margin-bottom:3px}.status{position:fixed;z-index:4;top:calc(66px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);font-size:11px;color:#d8d7f6;background:#14142bcc;border:1px solid var(--line);border-radius:999px;padding:7px 11px;white-space:nowrap;max-width:92vw;overflow:hidden;text-overflow:ellipsis}
+#toast{position:fixed;z-index:10;top:calc(104px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);background:#282345;color:white;border:1px solid #ffffff22;border-radius:12px;padding:10px 14px;font-size:12px;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90vw;text-align:center}#toast.show{opacity:1}
+#help{position:fixed;z-index:20;inset:0;background:#050510dd;display:none;align-items:center;justify-content:center;padding:20px}#help .card{max-width:390px;width:100%;padding:20px;border-radius:22px;background:#17172f;border:1px solid var(--line)}#help h2{margin:0 0 10px;font-size:19px}#help p,#help li{font-size:13px;color:#d2d3ea;line-height:1.6}#help ul{padding-left:20px}
+@media(min-width:700px){#panel{left:auto;right:18px;bottom:18px;width:390px;max-height:calc(100vh - 115px)}header{padding-left:22px;padding-right:22px}.status{top:82px}.brand h1{font-size:18px}}
+@media(max-height:650px){#panel{max-height:48vh;padding:10px}.shape{min-height:54px}.shape .emoji{font-size:17px}.row{margin:6px 0}.actions{margin-top:8px}.status{top:60px}}
+</style>
+</head>
+<body>
+<canvas id="stage"></canvas><div class="vignette"></div>
+<header>
+ <div class="brand"><div class="logo">✦</div><div><h1>Particle Magic Studio</h1><p>TOUCH • CREATE • PLAY</p></div></div>
+ <button class="pill" id="helpBtn">ⓘ Guide</button>
+</header>
+<div class="status" id="status">✦ Magic particles ready</div>
+<div id="toast"></div>
+<section id="panel">
+ <div class="panel-top"><h2>CHOOSE YOUR MAGIC</h2><span class="hint">Tap a shape</span></div>
+ <div class="shapes" id="shapes">
+  <button class="shape active" data-shape="heart"><span class="emoji">💖</span><span>Heart</span></button>
+  <button class="shape" data-shape="butterfly"><span class="emoji">🦋</span><span>Butterfly</span></button>
+  <button class="shape" data-shape="flower"><span class="emoji">🌸</span><span>Flower</span></button>
+  <button class="shape" data-shape="galaxy"><span class="emoji">🌌</span><span>Galaxy</span></button>
+  <button class="shape" data-shape="fire"><span class="emoji">🔥</span><span>Fire</span></button>
+  <button class="shape" data-shape="star"><span class="emoji">⭐</span><span>Star</span></button>
+  <button class="shape" data-shape="spiral"><span class="emoji">🌀</span><span>Spiral</span></button>
+  <button class="shape" data-shape="orb"><span class="emoji">🔮</span><span>Magic Orb</span></button>
+  <button class="shape" data-shape="dna"><span class="emoji">🧬</span><span>DNA</span></button>
+  <button class="shape" data-shape="burst"><span class="emoji">🎆</span><span>Fireworks</span></button>
+ </div>
+ <div class="row"><label>COLORS</label><div class="swatches" id="swatches">
+  <button class="swatch active" data-color="#ff4fa3" style="background:#ff4fa3" aria-label="Pink"></button>
+  <button class="swatch" data-color="#8b5cf6" style="background:#8b5cf6" aria-label="Purple"></button>
+  <button class="swatch" data-color="#24d9ff" style="background:#24d9ff" aria-label="Cyan"></button>
+  <button class="swatch" data-color="#62ffad" style="background:#62ffad" aria-label="Green"></button>
+  <button class="swatch" data-color="#ffd166" style="background:#ffd166" aria-label="Gold"></button>
+  <button class="swatch" data-color="#ffffff" style="background:#ffffff" aria-label="White"></button>
+  <input id="customColor" type="color" value="#ff4fa3" aria-label="Custom color">
+ </div><button class="rainbow" id="rainbowBtn">🌈 Rainbow: Off</button></div>
+ <div class="controls">
+  <div class="control"><div class="control-head"><span>Particle count</span><b id="countVal">900</b></div><input id="count" type="range" min="250" max="1600" step="50" value="900"></div>
+  <div class="control"><div class="control-head"><span>Particle size</span><b id="sizeVal">2.2</b></div><input id="size" type="range" min="1" max="5" step=".2" value="2.2"></div>
+  <div class="control"><div class="control-head"><span>Motion speed</span><b id="speedVal">1.0×</b></div><input id="speed" type="range" min=".2" max="2.5" step=".1" value="1"></div>
+  <div class="control"><div class="control-head"><span>Glow power</span><b id="glowVal">1.0×</b></div><input id="glow" type="range" min=".3" max="2" step=".1" value="1"></div>
+ </div>
+ <div class="actions">
+  <button class="btn primary" id="burstBtn"><small>✧</small>Magic Burst</button>
+  <button class="btn" id="pauseBtn"><small>Ⅱ</small>Pause</button>
+  <button class="btn" id="resetBtn"><small>↺</small>Reset</button>
+  <button class="btn" id="saveBtn"><small>▣</small>Save PNG</button>
+  <button class="btn" id="fullscreenBtn"><small>⛶</small>Full screen</button>
+  <button class="btn" id="lessBtn"><small>−</small>Lite Mode</button>
+  <button class="btn" id="rotateBtn"><small>⟳</small>Rotate: On</button>
+  <button class="btn" id="hideBtn"><small>⌄</small>Hide Panel</button>
+ </div>
+</section>
+<div id="help"><div class="card"><h2>✦ Magic guide</h2><p>Use your finger to make magic! This studio is designed for mobile phones and does not need camera permission.</p><ul><li><b>Touch and drag:</b> move the particles around.</li><li><b>Tap the background:</b> create a little burst of energy.</li><li><b>Choose shapes:</b> heart, butterfly, flower, galaxy and more.</li><li><b>Lite Mode:</b> reduces particles for smoother performance on older phones.</li><li><b>Save PNG:</b> saves a snapshot of the current scene.</li></ul><button class="btn primary" id="closeHelp" style="width:100%">Let's create ✨</button></div></div>
+<script>
+(()=>{'use strict';
+const canvas=document.getElementById('stage'),ctx=canvas.getContext('2d',{alpha:false,desynchronized:true});
+const $=id=>document.getElementById(id);
+let W=innerWidth,H=innerHeight,DPR=1,particles=[],shape='heart',color='#ff4fa3',rainbow=false,paused=false,rotating=true,lite=false,panelHidden=false,t=0,last=0,burstPower=0,pointer={x:0,y:0,active:false,down:false},toastTimer;
+const settings={count:900,size:2.2,speed:1,glow:1};
+function resize(){W=innerWidth;H=innerHeight;DPR=Math.min(devicePixelRatio||1,1.5);canvas.width=Math.round(W*DPR);canvas.height=Math.round(H*DPR);canvas.style.width=W+'px';canvas.style.height=H+'px';ctx.setTransform(DPR,0,0,DPR,0,0);ctx.fillStyle='#080817';ctx.fillRect(0,0,W,H);makeParticles();}
+function rand(a,b){return a+Math.random()*(b-a)}
+function hexRGB(hex){let h=hex.replace('#','');return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]}
+function pointFor(type,u,idx,n){
+ const a=u*Math.PI*2, r=Math.sqrt(u);
+ if(type==='heart'){let q=u*Math.PI*2;return {x:16*Math.pow(Math.sin(q),3),y:-(13*Math.cos(q)-5*Math.cos(2*q)-2*Math.cos(3*q)-Math.cos(4*q))}}
+ if(type==='butterfly'){let q=u*Math.PI*12;let rr=Math.exp(Math.cos(q))-2*Math.cos(4*q)-Math.pow(Math.sin(q/12),5);return {x:Math.sin(q)*rr*8,y:Math.cos(q)*rr*7}}
+ if(type==='flower'){let rr=90*Math.cos(5*a);return {x:rr*Math.cos(a),y:rr*Math.sin(a)}}
+ if(type==='galaxy'){let arm=idx%4,rr=rand(8,190)*Math.sqrt(u),aa=rr*.035+arm*Math.PI/2;return {x:Math.cos(aa)*rr,y:Math.sin(aa)*rr*.62}}
+ if(type==='fire'){return {x:rand(-55,55)*(1-u*.5),y:rand(-160,110)}}
+ if(type==='star'){let rr=(idx%2===0?145:62)*rand(.8,1.08);return {x:Math.cos(a)*rr,y:Math.sin(a)*rr}}
+ if(type==='spiral'){let rr=20+u*185,aa=a*5+rr*.04;return {x:Math.cos(aa)*rr,y:Math.sin(aa)*rr*.72}}
+ if(type==='orb'){let z=rand(-1,1),rr=150*Math.sqrt(1-z*z);return {x:Math.cos(a)*rr,y:Math.sin(a)*rr,z}}
+ if(type==='dna'){let rr=125,aa=u*Math.PI*12;return {x:Math.sin(aa)*rr,y:(u-.5)*320+Math.cos(aa)*18}}
+ if(type==='burst'){return {x:Math.cos(a)*rand(30,200),y:Math.sin(a)*rand(30,180)}}
+ return {x:0,y:0}
+}
+function makeParticles(){const n=settings.count;particles=[];for(let i=0;i<n;i++){let u=i/n,p=pointFor(shape,u,i,n);particles.push({u,x:p.x,y:p.y,z:p.z||0,phase:rand(0,6.28),s:rand(.5,1.7),vx:0,vy:0,tw:rand(-1,1),h:rand(0,360),spark:Math.random()})}}
+function setShape(s){shape=s;makeParticles();document.querySelectorAll('.shape').forEach(b=>b.classList.toggle('active',b.dataset.shape===s));showToast(s==='burst'?'Fireworks are ready!':s[0].toUpperCase()+s.slice(1)+' magic selected')}
+function showToast(msg){const el=$('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),1700)}
+function updateStatus(){ $('status').textContent=(paused?'Ⅱ Paused':`✦ ${shape[0].toUpperCase()+shape.slice(1)} magic`)+(pointer.active?' • Touch control active':'') }
+function draw(now){requestAnimationFrame(draw);if(!last)last=now;let dt=Math.min((now-last)/16.67,2);last=now;if(paused)return;t+=.012*settings.speed*dt;
+ ctx.globalCompositeOperation='source-over';ctx.fillStyle='rgba(5,5,19,0.23)';ctx.fillRect(0,0,W,H);
+ // subtle star field
+ for(let i=0;i<24;i++){let x=(i*97+Math.sin(t*.4+i)*23)%W,y=(i*173+t*8)%H;ctx.fillStyle='rgba(180,190,255,.18)';ctx.fillRect(x,y,1,1)}
+ const minDim=Math.min(W,H),scale=Math.min(minDim/430,1.25),cx=W*.5,cy=H*(panelHidden?.53:.39);
+ const glow= settings.glow;
+ ctx.save();ctx.translate(cx,cy);if(rotating)ctx.rotate(Math.sin(t*.35)*.09);
+ ctx.globalCompositeOperation='lighter';
+ const rgb=hexRGB(color);
+ for(let i=0;i<particles.length;i++){
+  const p=particles[i];let base=pointFor(shape,p.u,i,particles.length);
+  let x=base.x,y=base.y;
+  if(shape==='heart'){x*=7.5;y*=7.5}
+  else if(shape==='butterfly'){x*=1.05;y*=1.05}
+  else if(shape==='flower'){x*=1.35;y*=1.35}
+  else if(shape==='galaxy'){/* already sized */}
+  else if(shape==='fire'){y+=Math.sin(t*3+p.phase)*9-((t*22+p.phase*15)%70);x+=Math.sin(t*2+p.phase)*12}
+  else if(shape==='star'){x*=1;y*=1}
+  else if(shape==='spiral'){x*=1;y*=1}
+  else if(shape==='orb'){let z=p.z||0,ang=t*.55+p.phase*.08,xx=x*Math.cos(ang)-z*140*Math.sin(ang);x=xx;y=y}
+  else if(shape==='dna'){x+=Math.sin(t*1.7+p.u*12)*14}
+  else if(shape==='burst'){let k=1+.12*Math.sin(t*2+p.phase);x*=k;y*=k}
+  const breathe=1+Math.sin(t*2+p.phase)*.035;
+  x*=scale*breathe;y*=scale*breathe;
+  if(pointer.active){let dx=(pointer.x-cx)-x*scale,dy=(pointer.y-cy)-y*scale,dist=Math.hypot(dx,dy);if(dist<100){let force=(100-dist)/100*.7;x-=dx*force/scale;y-=dy*force/scale}}
+  let hue=rainbow?(p.h+t*55)%360:null;
+  let c=rainbow?`hsla(${hue},100%,${62+Math.sin(t*3+p.phase)*12}%,.9)`:`rgba(${rgb[0]},${rgb[1]},${rgb[2]},${.46+p.s*.28})`;
+  const size=Math.max(.65,settings.size*p.s*scale*.65);
+  if(p.spark>.91&&Math.sin(t*5+p.phase)>0.82){ctx.strokeStyle=c;ctx.lineWidth=size*.7;ctx.beginPath();ctx.moveTo(x-size*3,y);ctx.lineTo(x+size*3,y);ctx.moveTo(x,y-size*3);ctx.lineTo(x,y+size*3);ctx.stroke()}
+  ctx.fillStyle=c;ctx.shadowBlur=Math.min(28,12*glow);ctx.shadowColor=rainbow?`hsl(${hue},100%,65%)`:color;ctx.beginPath();ctx.arc(x,y,size*(1+burstPower*.8),0,Math.PI*2);ctx.fill();
+ }
+ ctx.restore();ctx.globalCompositeOperation='source-over';
+ if(burstPower>0)burstPower=Math.max(0,burstPower-.025*dt);
+ if(shape==='fire'&&Math.random()<.55){let x=rand(cx-45*scale,cx+45*scale),y=cy+rand(30,120)*scale;ctx.globalCompositeOperation='lighter';ctx.fillStyle=rainbow?`hsl(${rand(0,60)},100%,60%)`:color;ctx.globalAlpha=rand(.2,.7);ctx.beginPath();ctx.arc(x,y,rand(1,4),0,6.28);ctx.fill();ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over'}
+}
+function burst(){burstPower=1.8;for(const p of particles){p.x*=rand(1.02,1.25);p.y*=rand(1.02,1.25)}showToast('✨ Magic burst!')}
+canvas.addEventListener('pointerdown',e=>{pointer={x:e.clientX,y:e.clientY,active:true,down:true};if(e.pointerType==='mouse')canvas.setPointerCapture?.(e.pointerId);burstPower=.55;updateStatus()});
+canvas.addEventListener('pointermove',e=>{if(e.pointerType==='mouse'||e.buttons||pointer.down){pointer.x=e.clientX;pointer.y=e.clientY;pointer.active=true}});
+function stopPointer(){pointer.down=false;setTimeout(()=>{pointer.active=false;updateStatus()},900)}
+canvas.addEventListener('pointerup',stopPointer);canvas.addEventListener('pointercancel',stopPointer);canvas.addEventListener('pointerleave',e=>{if(e.pointerType==='mouse')pointer.active=false});
+document.querySelectorAll('.shape').forEach(b=>b.addEventListener('click',()=>setShape(b.dataset.shape)));
+function setColor(c){color=c;rainbow=false;$('rainbowBtn').textContent='🌈 Rainbow: Off';document.querySelectorAll('.swatch').forEach(b=>b.classList.toggle('active',b.dataset.color===c));$('customColor').value=c;showToast('Color updated');}
+document.querySelectorAll('.swatch').forEach(b=>b.addEventListener('click',()=>setColor(b.dataset.color)));
+$('customColor').addEventListener('input',e=>setColor(e.target.value));
+$('rainbowBtn').addEventListener('click',()=>{rainbow=!rainbow;$('rainbowBtn').textContent='🌈 Rainbow: '+(rainbow?'On':'Off');showToast(rainbow?'Rainbow colors enabled':'Rainbow colors disabled')});
+[['count','countVal',v=>Math.round(v),v=>{settings.count=+v;makeParticles()}],['size','sizeVal',v=>(+v).toFixed(1),v=>settings.size=+v],['speed','speedVal',v=>(+v).toFixed(1)+'×',v=>settings.speed=+v],['glow','glowVal',v=>(+v).toFixed(1)+'×',v=>settings.glow=+v]].forEach(([id,out,fmt,fn])=>$(id).addEventListener('input',e=>{fn(e.target.value);$(out).textContent=fmt(e.target.value)}));
+$('burstBtn').addEventListener('click',burst);
+$('pauseBtn').addEventListener('click',()=>{paused=!paused;$('pauseBtn').innerHTML=paused?'<small>▶</small>Resume':'<small>Ⅱ</small>Pause';if(!paused){ctx.fillStyle='#080817';ctx.fillRect(0,0,W,H)}updateStatus()});
+$('resetBtn').addEventListener('click',()=>{settings.count=lite?400:900;settings.size=2.2;settings.speed=1;settings.glow=1;for(const [id,v] of [['count',settings.count],['size',2.2],['speed',1],['glow',1]])$(id).value=v;for(const [id,v] of [['countVal',settings.count],['sizeVal','2.2'],['speedVal','1.0×'],['glowVal','1.0×']])$(id).textContent=v;setColor('#ff4fa3');rainbow=false;rotating=true;$('rotateBtn').textContent='⟳ Rotate: On';paused=false;$('pauseBtn').innerHTML='<small>Ⅱ</small>Pause';setShape('heart');showToast('Studio reset to default')});
+$('fullscreenBtn').addEventListener('click',async()=>{try{if(!document.fullscreenElement){await document.documentElement.requestFullscreen?.();}else await document.exitFullscreen?.();}catch(e){showToast('Full screen is not supported in this browser')}})
+$('lessBtn').addEventListener('click',()=>{lite=!lite;settings.count=lite?400:900;$('count').value=settings.count;$('countVal').textContent=settings.count;makeParticles();$('lessBtn').innerHTML=lite?'<small>＋</small>Normal Mode':'<small>−</small>Lite Mode';showToast(lite?'Lite Mode: smoother performance':'Normal Mode enabled')});
+$('rotateBtn').addEventListener('click',()=>{rotating=!rotating;$('rotateBtn').textContent='⟳ Rotate: '+(rotating?'On':'Off')});
+$('hideBtn').addEventListener('click',()=>{panelHidden=!panelHidden;$('panel').style.display=panelHidden?'none':'block';$('hideBtn').innerHTML=panelHidden?'<small>⌃</small>Show Panel':'<small>⌄</small>Hide Panel';updateStatus()});
+$('helpBtn').addEventListener('click',()=>$('help').style.display='flex');$('closeHelp').addEventListener('click',()=>$('help').style.display='none');$('help').addEventListener('click',e=>{if(e.target===$('help'))$('help').style.display='none'});
+$('saveBtn').addEventListener('click',()=>{try{const a=document.createElement('a');a.download='particle-magic-studio.png';a.href=canvas.toDataURL('image/png');a.click();showToast('Snapshot saved to your device')}catch(e){showToast('Could not save image on this browser')}});
+addEventListener('resize',resize,{passive:true});
+resize();requestAnimationFrame(draw);updateStatus();
+})();
+</script>
+</body>
+</html>
